@@ -1,22 +1,16 @@
+import argparse
 import urllib
+from pathlib import Path
 
-import cv2
+from tqdm.auto import tqdm
+from PIL import Image
+import numpy as np
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
 
-def main():
+def main(image_path=None):
     print("Hello from image-clustering!")
-    
-    IMAGE_FILENAMES = ['burger.jpg', 'burger_crop.jpg']
-
-    for name in IMAGE_FILENAMES:
-        url = f'https://storage.googleapis.com/mediapipe-assets/{name}'
-        urllib.request.urlretrieve(url, name)
-
-    images = {name: cv2.imread(name) for name in IMAGE_FILENAMES}
-    for name, image in images.items():
-        print(name)
 
     # Create options for Image Embedder
     base_options = python.BaseOptions(model_asset_path='embedder.tflite')
@@ -27,20 +21,31 @@ def main():
 
 
     # Create Image Embedder
+    embedding_results = {}
     with vision.ImageEmbedder.create_from_options(options) as embedder:
 
-        # Format images for MediaPipe
-        first_image = mp.Image.create_from_file(IMAGE_FILENAMES[0])
-        second_image = mp.Image.create_from_file(IMAGE_FILENAMES[1])
-        first_embedding_result = embedder.embed(first_image)
-        second_embedding_result = embedder.embed(second_image)
-
-        # Calculate and print similarity
-        similarity = vision.ImageEmbedder.cosine_similarity(
-            first_embedding_result.embeddings[0],
-            second_embedding_result.embeddings[0])
-        print(similarity)        
+        for p in tqdm(Path(image_path).glob('*.webp')):
+            # Format images for MediaPipe
+            #image = mp.Image.create_from_file(str(p))
+            try:
+                pil_img = Image.open(p)
+                image = mp.Image(
+                image_format=mp.ImageFormat.SRGB, data=np.asarray(pil_img))
+                result = embedder.embed(image)
+                embedding_results[p.name] = result
+            except:
+                print(p)
+    print(embedding_results)
+        # # Calculate and print similarity
+        # similarity = vision.ImageEmbedder.cosine_similarity(
+        #     first_embedding_result.embeddings[0],
+        #     second_embedding_result.embeddings[0])
+        # print(similarity)        
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Image clustering using MediaPipe embeddings")
+    parser.add_argument("--images", type=str, help="Path to image or directory of images to process")
+    args = parser.parse_args()
+
+    main(image_path=args.images)
