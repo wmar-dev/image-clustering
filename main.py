@@ -52,7 +52,7 @@ def main(image_path=None):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Image clustering using MediaPipe embeddings"
+        description="Image clustering using CLIP embeddings"
     )
     parser.add_argument(
         "--images", type=str, help="Path to image or directory of images to process"

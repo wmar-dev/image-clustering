@@ -49,5 +49,4 @@ uv run main.py --images <path_to_images>
 
 ### Key Files
 
-- `embedder.tflite`: TensorFlow Lite model file (4.1MB) - appears unused, may be legacy from MediaPipe approach
 - Database location: `/tmp/embedding.db` (temporary, will be lost on reboot)
