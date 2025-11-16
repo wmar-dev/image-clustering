@@ -17,6 +17,9 @@ from union_find import UnionFind
 # Create database in system temp directory
 DB = Path(tempfile.gettempdir()) / "embedding.db"
 
+# Supported image file extensions
+IMAGE_EXTENSIONS = ["jpg", "webp", "png"]
+
 
 def setup_db():
     with sqlite3.connect(DB) as conn:
@@ -33,7 +36,7 @@ def compute_emeddings(image_path=None):
     device = "cuda" if torch.cuda.is_available() else "cpu"
     model, preprocess = clip.load("ViT-B/32", device=device)
 
-    for glob in [Path(image_path).glob(f"*.{ext}") for ext in ["jpg", "webp", "png"]]:
+    for glob in [Path(image_path).glob(f"*.{ext}") for ext in IMAGE_EXTENSIONS]:
         for p in tqdm(glob):
             try:
                 image = preprocess(Image.open(p)).unsqueeze(0).to(device)
