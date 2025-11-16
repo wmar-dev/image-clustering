@@ -135,7 +135,7 @@ def cluster_embeddings(similarity_threshold=0.85):
     return clusters
 
 
-def main(image_path=None):
+def main(image_path=None, threshold=0.85):
     print("Hello from image-clustering!")
 
     setup_db()
@@ -143,7 +143,7 @@ def main(image_path=None):
     compute_emeddings(image_path)
 
     # Cluster the embeddings
-    clusters = cluster_embeddings(similarity_threshold=0.85)
+    clusters = cluster_embeddings(similarity_threshold=threshold)
 
 
 if __name__ == "__main__":
@@ -153,6 +153,12 @@ if __name__ == "__main__":
     parser.add_argument(
         "--images", type=str, help="Path to image or directory of images to process"
     )
+    parser.add_argument(
+        "--threshold",
+        type=float,
+        default=0.85,
+        help="Cosine similarity threshold for clustering (default: 0.85, range: 0.0-1.0)",
+    )
     args = parser.parse_args()
 
-    main(image_path=args.images)
+    main(image_path=args.images, threshold=args.threshold)

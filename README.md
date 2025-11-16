@@ -34,6 +34,11 @@ Process images in current directory:
 uv run main.py --images .
 ```
 
+Adjust the similarity threshold (stricter matching):
+```bash
+uv run main.py --images /path/to/images --threshold 0.95
+```
+
 The tool will:
 1. Generate CLIP embeddings for all images
 2. Store embeddings in a SQLite database (cached for future runs)
@@ -66,10 +71,18 @@ The clustering pipeline:
 
 ## Configuration
 
-To adjust the similarity threshold, modify the value in [main.py:146](main.py#L146):
-```python
-clusters = cluster_embeddings(similarity_threshold=0.85)  # Adjust between 0.0 and 1.0
+**Similarity Threshold**
+
+Adjust the threshold using the `--threshold` argument (range: 0.0-1.0, default: 0.85):
+
+```bash
+uv run main.py --images /path/to/images --threshold 0.90
 ```
 
-Higher values (closer to 1.0) = stricter matching, more clusters
-Lower values (closer to 0.0) = looser matching, fewer clusters
+- **Higher values** (closer to 1.0) = stricter matching, more clusters
+- **Lower values** (closer to 0.0) = looser matching, fewer clusters
+
+Examples:
+- `--threshold 0.95`: Very strict, only near-identical images clustered together
+- `--threshold 0.85`: Default, groups visually similar images
+- `--threshold 0.70`: Looser, may group images with similar themes/colors

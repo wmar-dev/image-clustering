@@ -24,6 +24,9 @@ Note: CLIP must be installed from GitHub, not PyPI. Additional dependencies (pil
 uv run main.py --images <path_to_images>
 ```
 
+**Optional Arguments**:
+- `--threshold`: Cosine similarity threshold for clustering (default: 0.85, range: 0.0-1.0)
+
 ## Architecture
 
 ### Core Components
@@ -33,7 +36,7 @@ uv run main.py --images <path_to_images>
 - Processes images using CLIP ViT-B/32 model with GPU acceleration when available
 - Supports jpg, webp, and png formats (defined in `IMAGE_EXTENSIONS` global)
 - Database schema: `embedding(content TEXT PRIMARY KEY, embedding_json BLOB)`
-- Clusters images using cosine similarity (default threshold: 0.85)
+- Clusters images using cosine similarity (configurable via `--threshold` arg, default: 0.85)
 - Prints detailed cluster results showing grouped similar images
 - Note: Contains typo in function name `compute_emeddings` (should be `compute_embeddings`)
 
