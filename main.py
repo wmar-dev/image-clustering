@@ -119,6 +119,9 @@ def cluster_embeddings(similarity_threshold=0.85):
     print(f"\nFound {len(clusters)} clusters:")
     for cluster_id, images in sorted(clusters.items(), key=lambda x: len(x[1]), reverse=True):
         print(f"  Cluster {cluster_id}: {len(images)} images")
+        if len(images) > 1:
+            for img_path in images:
+                print(f"    - {img_path}")
 
     return clusters
 
