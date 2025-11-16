@@ -2,12 +2,16 @@
 import sqlite3
 import json
 import argparse
+import logging
 from pathlib import Path
 
 from tqdm.auto import tqdm
 import torch
 import clip
 from PIL import Image
+import numpy as np
+
+from union_find import UnionFind
 
 DB = "/tmp/embedding.db"
 
@@ -42,12 +46,92 @@ def compute_emeddings(image_path=None):
                 logging.warning(f"Error computing embedding for: {p}")
 
 
+def read_embeddings():
+    """Read all embeddings from the database."""
+    embeddings = []
+    image_paths = []
+
+    with sqlite3.connect(DB) as conn:
+        cursor = conn.execute("SELECT content, embedding_json FROM embedding")
+        for row in cursor:
+            image_path, embedding_json = row
+            embedding = json.loads(embedding_json)
+            image_paths.append(image_path)
+            embeddings.append(np.array(embedding))
+
+    return image_paths, embeddings
+
+
+def cosine_similarity(embedding1, embedding2):
+    """Compute cosine similarity between two embeddings."""
+    # Flatten embeddings if they are multidimensional
+    emb1 = np.array(embedding1).flatten()
+    emb2 = np.array(embedding2).flatten()
+
+    # Compute cosine similarity
+    dot_product = np.dot(emb1, emb2)
+    norm1 = np.linalg.norm(emb1)
+    norm2 = np.linalg.norm(emb2)
+
+    if norm1 == 0 or norm2 == 0:
+        return 0.0
+
+    return dot_product / (norm1 * norm2)
+
+
+def cluster_embeddings(similarity_threshold=0.85):
+    """
+    Cluster images based on embedding similarity using Union-Find.
+
+    Args:
+        similarity_threshold: Cosine similarity threshold for clustering (default: 0.85)
+
+    Returns:
+        dict: Mapping of cluster_id to list of image paths
+    """
+    image_paths, embeddings = read_embeddings()
+
+    if len(embeddings) == 0:
+        print("No embeddings found in database")
+        return {}
+
+    print(f"Clustering {len(embeddings)} images with similarity threshold {similarity_threshold}")
+
+    # Initialize Union-Find structure
+    uf = UnionFind(len(embeddings))
+
+    # Compare all pairs and union similar images
+    for i in tqdm(range(len(embeddings)), desc="Computing similarities"):
+        for j in range(i + 1, len(embeddings)):
+            similarity = cosine_similarity(embeddings[i], embeddings[j])
+            if similarity >= similarity_threshold:
+                uf.union(i, j)
+
+    # Group images by cluster
+    clusters = {}
+    for i in range(len(embeddings)):
+        root = uf.find(i)
+        if root not in clusters:
+            clusters[root] = []
+        clusters[root].append(image_paths[i])
+
+    # Print cluster summary
+    print(f"\nFound {len(clusters)} clusters:")
+    for cluster_id, images in sorted(clusters.items(), key=lambda x: len(x[1]), reverse=True):
+        print(f"  Cluster {cluster_id}: {len(images)} images")
+
+    return clusters
+
+
 def main(image_path=None):
     print("Hello from image-clustering!")
 
     setup_db()
 
     compute_emeddings(image_path)
+
+    # Cluster the embeddings
+    clusters = cluster_embeddings(similarity_threshold=0.85)
 
 
 if __name__ == "__main__":
