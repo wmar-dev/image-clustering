@@ -1,3 +1,4 @@
 *.jpg
 *.tflite
 .ipynb_checkpoints/
+.venv
