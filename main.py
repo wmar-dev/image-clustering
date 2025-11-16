@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-import sqlite3
-import json
-import argparse
-import logging
-import tempfile
 from pathlib import Path
+import argparse
+import json
+import logging
+import sqlite3
+import tempfile
 
-from tqdm.auto import tqdm
-import torch
-import clip
 from PIL import Image
+from tqdm.auto import tqdm
+import clip
 import numpy as np
+import torch
 
 from union_find import UnionFind
 
@@ -97,7 +97,9 @@ def cluster_embeddings(similarity_threshold=0.85):
         print("No embeddings found in database")
         return {}
 
-    print(f"Clustering {len(embeddings)} images with similarity threshold {similarity_threshold}")
+    print(
+        f"Clustering {len(embeddings)} images with similarity threshold {similarity_threshold}"
+    )
 
     # Initialize Union-Find structure
     uf = UnionFind(len(embeddings))
@@ -119,7 +121,9 @@ def cluster_embeddings(similarity_threshold=0.85):
 
     # Print cluster summary
     print(f"\nFound {len(clusters)} clusters:")
-    for cluster_id, images in sorted(clusters.items(), key=lambda x: len(x[1]), reverse=True):
+    for cluster_id, images in sorted(
+        clusters.items(), key=lambda x: len(x[1]), reverse=True
+    ):
         print(f"  Cluster {cluster_id}: {len(images)} images")
         if len(images) > 1:
             for img_path in images:
