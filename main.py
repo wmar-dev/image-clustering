@@ -3,6 +3,7 @@ import sqlite3
 import json
 import argparse
 import logging
+import tempfile
 from pathlib import Path
 
 from tqdm.auto import tqdm
@@ -13,7 +14,8 @@ import numpy as np
 
 from union_find import UnionFind
 
-DB = "/tmp/embedding.db"
+# Create database in system temp directory
+DB = Path(tempfile.gettempdir()) / "embedding.db"
 
 
 def setup_db():
